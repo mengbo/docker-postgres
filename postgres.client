@@ -1,0 +1,30 @@
+#!/bin/sh
+
+source .env
+
+bash() {
+	echo "Run bash in the PostgreSQL container."
+	echo
+	docker exec -it postgres bash
+}
+
+superuser() {
+	echo "Connect to PostgreSQL with ${POSTGRES_USER}:"
+	echo
+	#docker run -it --rm --link postgres:postgres postgres \
+	#	psql -h postgres -U "${POSTGRES_USER}"
+	docker exec -it postgres psql -U "${POSTGRES_USER}"
+}
+
+case "$1" in
+	bash)
+		bash
+		;;
+	superuser) 
+		superuser
+		;;
+	*)
+		superuser
+		exit 1
+esac
+
