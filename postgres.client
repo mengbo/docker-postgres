@@ -16,12 +16,21 @@ superuser() {
 	docker exec -it postgres psql -U "${POSTGRES_USER}"
 }
 
+appuser() {
+	echo "Connect to PostgreSQL with ${APP_NAME}:"
+	echo
+	docker exec -it postgres psql -U "${APP_NAME}" "${POSTGRES_DB}"
+}
+
 case "$1" in
 	bash)
 		bash
 		;;
 	superuser) 
 		superuser
+		;;
+	appuser) 
+		appuser
 		;;
 	*)
 		superuser

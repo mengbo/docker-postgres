@@ -1,0 +1,33 @@
+#!/bin/sh
+
+source .env
+
+# For more infomation see:
+# https://www.postgresql.org/docs/current/static/ddl-schemas.html
+# https://wiki.postgresql.org/wiki/Database_Schema_Recommendations_for_an_Application
+#
+#zfs create -o mountpoint=/var/lib/postgresql/data/${APP_NAME}_data pgdatapool/${APP_NAME}_data
+#zfs set refquota=10G pgdatapool/${APP_NAME}_data
+#zfs set refreference=10G pgdatapool/${APP_NAME}_data
+#zfs create -o mountpoint=/var/lib/postgresql/data/${APP_NAME}_index pgindexpool/${APP_NAME}_index
+#zfs set refquota=10G pgindexpool/${APP_NAME}_index
+#zfs set refreference=10G pgindexpool/${APP_NAME}_index
+
+docker exec -i postgres mkdir -p "/var/lib/postgresql/data/${APP_NAME}_data"
+docker exec -i postgres mkdir -p "/var/lib/postgresql/data/${APP_NAME}_index"
+
+cat | docker exec -i postgres psql -U "${POSTGRES_USER}" << EOF
+
+create tablespace ${APP_NAME}_data location '/var/lib/postgresql/data/${APP_NAME}_data';
+create tablespace ${APP_NAME}_index location '/var/lib/postgresql/data/${APP_NAME}_index';
+
+create user ${APP_NAME} password '${APP_PASSWORD}';
+grant create on tablespace ${APP_NAME}_data to ${APP_NAME};
+grant create on tablespace ${APP_NAME}_index to ${APP_NAME};
+
+create schema ${APP_NAME};
+grant all on schema ${APP_NAME} to ${APP_NAME};
+
+revoke create on schema PUBLIC from public;
+
+EOF
